@@ -1,0 +1,48 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="card" style="width: 77rem; height: 37rem;">
+        <div class="card-body" style="margin-left: 40%;">
+        <form action="" enctype="multipart/form-data" method="post">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mt-6">
+                               <label for="file">Select File:</label>
+                               <input type="file" class="form-control" name="file" id="Upload_file" required >
+                    </div>
+                    
+                        
+                    <div class="form-group mt-3">
+                        <input type="submit" value="Upload">
+                    </div>
+                </div>
+                </div>
+            
+            
+            <!-- <button class="btn btn-danger">Cancel</button> -->
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+<script>
+	
+</script>
+{% endblock javascripts %}
+
+
