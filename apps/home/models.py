@@ -162,3 +162,8 @@ class TaskExecutionStep(db.Model):
     status = db.Column(db.Integer, default=2)
     step = db.Column(db.String(500))
     error = db.Column(db.String(2000))
+
+class MYOBACCOUNTRIGHT(db.Model):
+    __tablename__ = "Myob_account_right"
+    id = db.Column(db.Integer, primary_key=True)
+    company_file_id = db.Column(db.String(50))

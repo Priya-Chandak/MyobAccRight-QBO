@@ -1,6 +1,6 @@
 MDB_USERNAME = "root"
-MDB_PASSWORD = "mmg"
-MYOB_KEY = "client_id,client_secret,company_file_uri,company_file_id,refresh_token,access_token,redirect_uri"
+MDB_PASSWORD = "root"
+MYOB_KEY = "company_file_id"
 QBO_KEY = "client_id,client_secret,base_url,company_id,minor_version,User_Agent,access_token,refresh_token"
 XERO_KEY = "client_id,client_secret,refresh_token,access_token,xero-tenant-id,re_directURI,scopes,state"
 MYOBLEDGER_KEY = "client_id,client_secret,company_file_uri,company_file_id,refresh_token,access_token,redirect_uri"

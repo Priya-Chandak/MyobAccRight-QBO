@@ -17,7 +17,7 @@ def get_supplier(job_id,task_id):
         Collection = dbname["supplier"]
         payload, base_url, headers = get_settings_myob(job_id)
         no_of_records = dbname["supplier"].count_documents({'job_id':job_id})
-        url = f"{base_url}/Contact/Supplier?$top=1000&$skip={no_of_records}"
+        url = f"{base_url}/Contact/Supplier"
         response = requests.request("GET", url, headers=headers, data=payload)
         JsonResponse = response.json()
         JsonResponse1 = JsonResponse["Items"]

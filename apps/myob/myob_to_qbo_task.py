@@ -4,7 +4,7 @@ from apps.myob.myob_reader.all_bill import get_all_bill
 from apps.myob.myob_reader.all_invoice import get_all_invoice
 from apps.myob.myob_reader.bank_transfer import get_bank_transfer
 from apps.myob.myob_reader.bill_payment import get_bill_payment
-from apps.xero.qbo_writer.get_qbo_invoice_for_payments import get_qbo_invoice_for_payments,get_qbo_bill_for_payments 
+# from apps.xero.qbo_writer.get_qbo_invoice_for_payments import get_qbo_invoice_for_payments,get_qbo_bill_for_payments 
 from apps.myob.myob_reader.chart_of_account import get_chart_of_account
 from apps.myob.myob_reader.currency import get_currency
 from apps.myob.myob_reader.customer import get_customer
@@ -32,15 +32,15 @@ from apps.myob.myob_reader.service_purchase_order import get_service_purchase_or
 from apps.myob.myob_reader.spend_money import get_spend_money
 from apps.myob.myob_reader.supplier import get_supplier
 from apps.myob.myob_reader.taxcode import get_taxcode
-from apps.qbo.account.add_chart_of_account import add_chart_account
-from apps.qbo.account.add_duplicate_chart_of_account import (
+from apps.qbo.Account.add_chart_of_account import add_chart_account
+from apps.qbo.Account.add_duplicate_chart_of_account import (
     add_duplicate_chart_account,
     update_qbo_existing_chart_account,
 )
-from apps.qbo.account.add_item_bill import add_item_bill
-from apps.qbo.account.add_service_bill1 import add_service_bill1
-from apps.qbo.account.add_service_bill import add_service_bill
-from apps.qbo.account.get_COA_classification import get_classified_coa
+from apps.qbo.Account.add_item_bill import add_item_bill
+from apps.qbo.Account.add_service_bill1 import add_service_bill1
+from apps.qbo.Account.add_service_bill import add_service_bill
+from apps.qbo.Account.get_COA_classification import get_classified_coa
 from apps.qbo.reader.QBO_combined_tax import get_qbo_tax
 from apps.qbo.reader.qbo_data_reader import read_qbo_data
 from apps.qbo.reader.taxrate import get_qbo_taxrate
@@ -1099,7 +1099,7 @@ class MyobToQbo(object):
                 step_name = "Add Supplier Data"
                 write_task_execution_step(
                     task.id, status=2, step=step_name)
-                add_supplier(job_id,task.id)
+                # add_supplier(job_id,task.id)
                 write_task_execution_step(
                     task.id, status=1, step=step_name)
 

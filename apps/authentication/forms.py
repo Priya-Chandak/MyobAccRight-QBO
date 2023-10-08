@@ -70,6 +70,11 @@ class CreateauthcodeForm(FlaskForm):
     auth_code = StringField(
         "auth_code", id="auth_code", validators=[DataRequired()]
     )
+    
+class FileNameForm(FlaskForm):
+    file_name = StringField(
+        "file_name", id="file_name", validators=[DataRequired()]
+    )
    
 
 class CreateEmailForm(FlaskForm):

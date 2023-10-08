@@ -19,9 +19,12 @@ def get_customer(job_id,task_id):
 
         no_of_records = dbname["customer"].count_documents({'job_id':job_id})
         url = f"{base_url}/Contact/Customer?$top=1000&$skip={no_of_records}"
+        print(url)
         response = requests.request("GET", url, headers=headers, data=payload)
+        print(response)
         JsonResponse = response.json()
         JsonResponse1 = JsonResponse["Items"]
+        print(len(JsonResponse1))
 
         if response.status_code == 200 or response.status_code == 201:
         

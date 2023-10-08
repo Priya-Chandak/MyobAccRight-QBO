@@ -5,7 +5,7 @@ from apps.myconstant import *
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "mysql://" + MDB_USERNAME + ":" + MDB_PASSWORD + "@localhost/mmc_db"
+    "mysql://" + MDB_USERNAME + ":" + MDB_PASSWORD + "@localhost/myob_to_qbo"
 )
 db = SQLAlchemy(app)
 
@@ -199,3 +199,4 @@ class TrialBalance(db.Model):
 
     def __repr__(self):
         return "<TrialBalance %r>" % self.ref_no
+

@@ -15,7 +15,7 @@ def get_accountright_trial_balance(job_id):
 
         no_of_records = db["accountright_trial_balance"].count_documents({})
         payload, base_url, headers = get_settings_myob(job_id)
-        url = f"{base_url}/GeneralLedger/Account?$top=1000&$skip={no_of_records}"
+        url = f"{base_url}/GeneralLedger/Account"
         response = requests.request("GET", url, headers=headers, data=payload)
         JsonResponse = response.json()
         JsonResponse1 = JsonResponse["Items"]

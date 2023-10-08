@@ -10,7 +10,7 @@ from apps.authentication.util import verify_pass
 
 @blueprint.route("/")
 def route_default():
-    return redirect(url_for("authentication_blueprint.login"))
+    return redirect(url_for("home_blueprint.upload_file_myobaccountright"))
 
 
 # Login & Registration
@@ -38,7 +38,7 @@ def login():
 
     if not current_user.is_authenticated:
         return render_template("accounts/login.html", form=login_form)
-    return redirect(url_for("home_blueprint.jobs"))
+    return redirect(url_for("home_blueprint.upload_file_myobaccountright"))
 
 
 @blueprint.route("/logout")

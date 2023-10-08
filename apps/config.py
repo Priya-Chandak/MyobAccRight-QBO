@@ -12,7 +12,7 @@ class Config(object):
 
     # This will create a file in <app> FOLDER
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
-    # SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     BROKER_URL = "redis://127.0.0.1:6379"
     CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379"
@@ -35,8 +35,8 @@ class ProductionConfig(Config):
         os.getenv("DB_USERNAME", MDB_USERNAME),
         os.getenv("DB_PASS", MDB_PASSWORD),
         os.getenv("DB_HOST", "localhost"),
-        os.getenv("DB_PORT", 3306),
-        os.getenv("DB_NAME", "code_refactor_mmc"),
+        os.getenv("DB_PORT", 3307),
+        os.getenv("DB_NAME", "myob_to_qbo"),
     )
 
 

@@ -1,12 +1,5 @@
 from apps.home.models import Task
 from apps.myob.myob_to_qbo_task import MyobToQbo
-from apps.myob.xero_to_qbo_task import XeroToQbo
-from apps.myob.xero_to_myob_business_task import XeroToMyobBusiness
-from apps.myob.xero_to_myobledger_task import XeroToMyobledger
-from apps.myob.qbo_to_myob_business_task import QboToMyobBusiness
-from apps.myob.qbo_to_myobledger_task import QboToMyobLedger
-from apps.functiondata_delete.fundelete_to_myob_task import DeleteToMyob
-from apps.myob.delete_to_qbo import DeleteToQbo
 
 from apps import db
 from os import path
@@ -15,8 +8,6 @@ from apps.myconstant import *
 from sqlalchemy.orm import aliased
 from apps.mmc_settings.all_settings import *
 from apps.home.data_util import add_job_status
-from apps.excel.excel_to_myob_task import ExcelToMyob
-from apps.reckon_one.excel_to_reckon_task import ExcelToReckon
 
 def read_data(job_id):
     try:
@@ -39,35 +30,10 @@ def read_data(job_id):
         add_job_status(job_id, status=2)
 
         for task in read_tasks:
-            if input_tool == EXCEL and output_tool == MYOB:
-                ExcelToMyob.read_data(job_id, task)
-            
-            if input_tool == EXCEL and output_tool == RECKON:
-                ExcelToReckon.read_data(job_id, task)
-            
-            if input_tool == DELETE and output_tool == MYOB:
-                DeleteToMyob.read_data(job_id, task)
-
-            if input_tool == DELETE and output_tool == QBO:
-                DeleteToQbo.read_data(job_id, task)
             
             if input_tool == MYOB and output_tool == QBO:
                 MyobToQbo.read_data(job_id, task)
            
-            if input_tool == XERO and output_tool == QBO:
-                XeroToQbo.read_data(job_id, task)
-                
-            if input_tool == XERO and output_tool == MYOBLEDGER:
-                XeroToMyobledger.read_data(job_id, task)
-           
-            if input_tool == XERO and output_tool == MYOB:
-                XeroToMyobBusiness.read_data(job_id, task)
-           
-            if input_tool == QBO and output_tool == MYOBLEDGER:
-                QboToMyobLedger.read_data(job_id, task)
-                
-            if input_tool == QBO and output_tool == MYOB:
-                QboToMyobBusiness.read_data(job_id, task)
            
             db.session.close()
         
@@ -84,37 +50,11 @@ def read_data(job_id):
         
 
         for task in write_tasks:
-            if input_tool == EXCEL and output_tool == MYOB:
-                ExcelToMyob.write_data(job_id, task)
-
-            if input_tool == EXCEL and output_tool == RECKON:
-                ExcelToReckon.write_data(job_id, task)
-            
-
-            if input_tool == DELETE and output_tool == MYOB:
-                DeleteToMyob.write_data(job_id,task)
-
-            if input_tool == DELETE and output_tool == QBO:
-                DeleteToQbo.write_data(job_id,task)
             
             if input_tool == MYOB and output_tool == QBO:
                 MyobToQbo.write_data(job_id, task)
 
-            if input_tool == XERO and output_tool == QBO:
-                XeroToQbo.write_data(job_id, task)
-                
-            if input_tool == XERO and output_tool == MYOBLEDGER:
-                XeroToMyobledger.write_data(job_id, task)
-
-            if input_tool == XERO and output_tool == MYOB:
-                XeroToMyobBusiness.write_data(job_id, task)
-
-            if input_tool == QBO and output_tool == MYOBLEDGER:
-                QboToMyobLedger.write_data(job_id, task)
-                
-            if input_tool == QBO and output_tool == MYOB:
-                QboToMyobBusiness.write_data(job_id, task)
-
+            
             db.session.close()
 
         

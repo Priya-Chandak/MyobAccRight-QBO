@@ -4,6 +4,7 @@ from pathlib import Path
 from apps.util.qbo_util import post_data_in_myob, post_data_in_qbo,retry_payload_for_xero_to_myob,retry_payload_for_qbo_to_myob,retry_payload_for_excel_to_myob,retry_payload_for_xero_to_qbo,retry_payload_for_myob_to_qbo,retry_payload_for_excel_to_reckon
 import asyncio
 import ast
+import urllib.request, json
 
 import openpyxl
 from flask import render_template, redirect, request, url_for,jsonify
@@ -24,11 +25,11 @@ import base64
 
 from apps import db
 from apps.authentication.forms import CreateAccountForm
-from apps.authentication.forms import CreateJobForm, CreateSettingForm,CreateSelectidForm,CreateIdNameForm,CreateEmailForm,CreateauthcodeForm
+from apps.authentication.forms import CreateJobForm, CreateSettingForm,CreateSelectidForm,CreateIdNameForm,CreateEmailForm,CreateauthcodeForm,FileNameForm
 from apps.authentication.models import Users
 from apps.home import blueprint
 from apps.home.models import EntityDataReadDetails
-from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus, TaskExecutionStep,ToolId
+from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus, TaskExecutionStep,ToolId,MYOBACCOUNTRIGHT
 from apps.home.models import MyobSettings, QboSettings, XeroSettings, Tool, ToolSettings
 from apps.myconstant import *
 from apps.tasks.myob_to_qbo_task import read_myob_write_qbo_task
@@ -113,7 +114,7 @@ def myob_entities():
 
 
 @blueprint.route("/jobs")
-@login_required
+
 def jobs():
     page = request.args.get('page', 1, type=int)
     tool1 = aliased(Tool)
@@ -135,7 +136,7 @@ def jobs():
 
 
 @blueprint.route("/tasks/<int:job_id>")
-@login_required
+
 def tasks_by_job(job_id):
     tasks = Task.query.filter(
         Task.job_id == job_id
@@ -144,7 +145,7 @@ def tasks_by_job(job_id):
 
 
 @blueprint.route("/start_job/<int:job_id>")
-@login_required
+
 def start_job(job_id):
     # read_myob_write_qbo_task.apply_async(args=[job_id])
     tasks = Task.query.filter(
@@ -1842,20 +1843,20 @@ def upload_file(request):
         uploaded_file.save(os.path.join(get_root_path('apps'), 'files/', filename))
     path = os.path.join(get_root_path('apps'), 'files/', filename)
     print(path)
-    data1 = openpyxl.load_workbook(path)
-    sheets = data1.sheetnames
-    print(sheets)
+    # data1 = openpyxl.load_workbook(path)
+    # sheets = data1.sheetnames
+    # print(sheets)
 
     # fn = request.form.getlist('mycheckbox')
     # job.functions = ",".join(fn)
 
-    for fun in range(0, len(sheets)):
-        task = Task()
-        task.function_name = sheets[fun]
-        task.job_id = job.id
-        db.session.add(task)
-        db.session.commit()
-    return job.id
+    # for fun in range(0, len(sheets)):
+    #     task = Task()
+    #     task.function_name = sheets[fun]
+    #     task.job_id = job.id
+    #     db.session.add(task)
+    #     db.session.commit()
+    # return job.id
 
     # save_path = "/uploads"apps/home/files
     # file_name = "abc.xlsx"
@@ -1865,4 +1866,135 @@ def upload_file(request):
     # file1.close()
     # print("file created")
     # return send_from_directory(app.config['UPLOAD_PATH'],filename)
+
+
+
+@blueprint.route("/upload_file_myobaccountright", methods=["GET", "POST"])
+
+def upload_file_myobaccountright():
+
+    if request.method == "GET":
+                return render_template(
+            "home/upload_file_myobaccountright.html",
+        )
+
+    if request.method == "POST":
+        file_data=upload_file_accountright(request)
+        print(file_data)
+
+        return redirect(
+            url_for(
+                ".file_select_data",
+               )
+        )
+
+        # return render_template(
+        #     "home/file_data.html",
+        #  file_data=file_data
+        # )
+
+@blueprint.route("/upload_accountright")
+
+def upload_file_accountright(request):
+    uploaded_file = request.files['file']
+
+    if uploaded_file:
+        filename = secure_filename(uploaded_file.filename)
+        
+        upload_folder = r"C:\Users\dines\OneDrive\Documents\MYOB\My AccountRight Files"
+
+        os.makedirs(upload_folder, exist_ok=True)
+
+        file_path = os.path.join(upload_folder, filename)
+        uploaded_file.save(file_path)
+
+        print(f"File '{filename}' uploaded successfully to: {file_path}")
+
+        return "File uploaded successfully."
+    
+@blueprint.route("/file_select_data", methods=["GET", "POST"])
+
+def file_select_data():
+    url = "http://localhost:8080/AccountRight"
+    response = urllib.request.urlopen(url)
+    data = response.read()
+    dict = json.loads(data)
+
+    # data_file=request.form['file_data1']
+    # print(data_file,"print file name which is enter user......")
+
+    data1="Attander Investments Pty Ltd"
+    # print(request.form['url1'],"url1 data")
+
+    for item in dict:
+        if item['Name'] == data1 and item["ProductVersion"] == "2023.8":
+            print(item["Id"])
+            myob_file=MYOBACCOUNTRIGHT()
+            myob_file.company_file_id=item["Id"]
+            db.session.add(myob_file)
+            db.session.commit()
+    return render_template("home/file_data.html")
+
+
+@blueprint.route("/qbo_file_data", methods=["GET", "POST"])
+
+def qbo_file_data():
+
+    if request.method == "GET":
+                return render_template(
+            "home/qbo_file_data.html",
+        )
+
+
+@blueprint.route("/qbo_auth", methods=["GET", "POST"])
+def qbo_auth():
+    
+    CLIENT_ID = 'ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz'
+    CLIENT_SECRET = 'EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE'
+    REDIRECT_URI = 'https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl'
+    AUTHORIZATION_ENDPOINT = 'https://appcenter.intuit.com/connect/oauth2'
+    TOKEN_ENDPOINT = 'https://oauth.platform.intuit.com/oauth2/v1/tokens'
+    
+    
+#     auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
+    auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
+    print(auth_url,"print auth url")
+    # window.location.replace(auth_url,"_self")
+    webbrowser.open(auth_url,"_self")
+
+@blueprint.route("/data_access", methods=["GET", "POST"])
+def data_access():
+
+    token_endpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+
+    client_id = "ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz"
+    client_secret = "EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE"
+    redirect_uri = "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl"
+    authorization_code = "AB11696594182fue9VubtgFHh6MI7S62gkazaLaGQ42CUmAXD5"
+
+    data = {
+        "grant_type": "authorization_code",
+        "code": authorization_code,
+        "redirect_uri": redirect_uri,
+    }
+
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "Basic QUJBbmdSOTlGWDJzd0dxSnkzeGVIZmVSZlZ0U0pqSHFsb3dqYWRqZUdJZzRXMG1JZHo6RUMyYWJLeTF1aEhRY0VwSURaeTdFZXJIOGk4aEtsOWdKMUFSR0lMRQ==",
+    }
+
+    response = requests.post(token_endpoint, data=data, headers=headers)
+    print(response.json())
+
+    if response.status_code == 200:
+
+        access_token = response.json().get("access_token")
+        refresh_token = response.json().get("refresh_token")
+        print(f"Access Token: {access_token}")
+        print(f"refresh Token: {refresh_token}")
+    else:
+        print("Token failed data")
+        
+   
+
 
