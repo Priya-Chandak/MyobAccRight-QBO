@@ -11,5 +11,6 @@ apps/xero/_pycache_
 apps/qbo/account/_pycache_
 apps/xero/qbo_writer/_pycache_
 apps/qbo/reader/_pycache_
-venv
+venv/
+.venv
 apps/files

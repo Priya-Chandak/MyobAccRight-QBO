@@ -12,14 +12,14 @@ from apps.home.data_util import add_job_status
 def read_data(job_id):
     try:
         # GET MYOB data
-        #job_details = db.session.query(Jobs).get(job_id)
-        tool1 = aliased(Tool)
-        tool2 = aliased(Tool)
-        read_result = db.session.execute("select t1.account_type as input ,t2.account_type as output from jobs inner join tool t1 on t1.id=jobs.input_account_id inner join tool t2 on t2.id=jobs.output_account_id where jobs.id=:job_id", {"job_id":job_id})
-        # Output the query result as JSON
-        for row in read_result:
-            input_tool=row[0]
-            output_tool=row[1]
+        # #job_details = db.session.query(Jobs).get(job_id)
+        # tool1 = aliased(Tool)
+        # tool2 = aliased(Tool)
+        # read_result = db.session.execute("select t1.account_type as input ,t2.account_type as output from jobs inner join tool t1 on t1.id=jobs.input_account_id inner join tool t2 on t2.id=jobs.output_account_id where jobs.id=:job_id", {"job_id":job_id})
+        # # Output the query result as JSON
+        # for row in read_result:
+        input_tool=1
+        output_tool=2
         # Get list of tasks added in the job
 
         # TODO: Check if input tool is excel
@@ -31,18 +31,18 @@ def read_data(job_id):
 
         for task in read_tasks:
             
-            if input_tool == MYOB and output_tool == QBO:
+            if input_tool == 1 and output_tool == 2:
                 MyobToQbo.read_data(job_id, task)
            
            
             db.session.close()
         
 
-        write_result = db.session.execute("select t1.account_type as input ,t2.account_type as output from jobs inner join tool t1 on t1.id=jobs.input_account_id inner join tool t2 on t2.id=jobs.output_account_id where jobs.id=:job_id", {"job_id":job_id})
+        # write_result = db.session.execute("select t1.account_type as input ,t2.account_type as output from jobs inner join tool t1 on t1.id=jobs.input_account_id inner join tool t2 on t2.id=jobs.output_account_id where jobs.id=:job_id", {"job_id":job_id})
         # Output the query result as JSON
-        for row in write_result:
-            input_tool=row[0]
-            output_tool=row[1]
+        # for row in write_result:
+        #     input_tool=row
+        #     output_tool=row[1]
         # Get list of tasks added in the job
         
         write_tasks = Task.query.filter(Task.job_id == job_id).filter(Task.write != 1).all()
@@ -50,8 +50,9 @@ def read_data(job_id):
         
 
         for task in write_tasks:
+            print(task,"write task")
             
-            if input_tool == MYOB and output_tool == QBO:
+            if input_tool == 1 and output_tool == 2:
                 MyobToQbo.write_data(job_id, task)
 
             

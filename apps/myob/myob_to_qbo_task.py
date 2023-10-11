@@ -1099,7 +1099,7 @@ class MyobToQbo(object):
                 step_name = "Add Supplier Data"
                 write_task_execution_step(
                     task.id, status=2, step=step_name)
-                # add_supplier(job_id,task.id)
+                add_supplier(job_id,task.id)
                 write_task_execution_step(
                     task.id, status=1, step=step_name)
 

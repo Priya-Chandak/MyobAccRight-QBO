@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import string
 from pathlib import Path
 from apps.util.qbo_util import post_data_in_myob, post_data_in_qbo,retry_payload_for_xero_to_myob,retry_payload_for_qbo_to_myob,retry_payload_for_excel_to_myob,retry_payload_for_xero_to_qbo,retry_payload_for_myob_to_qbo,retry_payload_for_excel_to_reckon
 import asyncio
@@ -7,7 +9,7 @@ import ast
 import urllib.request, json
 
 import openpyxl
-from flask import render_template, redirect, request, url_for,jsonify
+from flask import render_template, redirect, request, url_for,jsonify,session
 from flask.helpers import get_root_path
 from flask_login import login_required
 from jinja2 import TemplateNotFound
@@ -155,10 +157,31 @@ def start_job(job_id):
 
 
 @blueprint.route("/startJobByID", methods=["POST"])
-@login_required
 def startJobByID():
-    job_id = request.form['job_id']
-    asyncio.run(read_myob_write_qbo_task(job_id))
+    job_functions=['Customer','Supplier']
+    # job_functions=['Chart of account','Job','Customer','Supplier','Journal','Spend Money','Receive Money','Bank Transfer','Bill','Invoice','Bill Payment','Invoice Payment']
+    job = Jobs()
+    # job.functions = "Chart of account,Job,Customer,Supplier,Journal,Spend Money,Receive Money,Bank Transfer,Bill,Invoice,Bill Payment,Invoice Payment"
+    job.functions="Customer,Supplier"
+    length = 10 # You can change this to your desired length
+    job.name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))  
+    print(job.name)    
+    job.description = "description1"
+    job.input_account_id = 1
+    job.output_account_id = 2
+    job.start_date = ""
+    job.end_date = ""
+    db.session.add(job)
+    db.session.commit()
+    for fun in range(0, len(job_functions)):
+        print('inside for loop',job.id)
+        task = Task()
+        task.function_name = job_functions[fun]
+        task.job_id = job.id
+        db.session.add(task)
+        db.session.commit()
+
+    asyncio.run(read_myob_write_qbo_task(job.id))
     return json.dumps({'status': 'success'})
 
 import requests
@@ -1284,86 +1307,33 @@ def choice_email_page():
        
 
 @blueprint.route("/jobs/create", methods=["GET", "POST"])
-@login_required
+
 def create_job():
-    create_job_form = CreateJobForm(request.form)
-    if request.method == "GET":
-        input_settings = Tool.query.filter(Tool.tool_type == "Input",Tool.account_type != "Delete")
-        # qbo_settings = QboSeCreateJobFormttings.query.all()
-        output_settings = Tool.query.filter(Tool.tool_type == "Output")
-        return render_template(
-            "home/create_job.html",
-            segment="jobs",
-            input_settings=input_settings,
-            output_settings=output_settings,
-            form=create_job_form,
+    job = Jobs()
+    job.functions = ["Chart of account","Customer","Supplier","Item"]
+    job.name = "job1"
+    job.description = "description1"
+    job.input_account_id = "1"
+    job.output_account_id = "2"
+    job.start_date = ""
+    job.end_date = ""
+    db.session.add(job)
+    db.session.commit()
+    for fun in range(0, len(fn)):
+        task = Task()
+        task.function_name = fn[fun]
+        task.job_id = job.id
+        db.session.add(task)
+        db.session.commit()
+    return redirect(
+        url_for(
+            ".tasks_by_job",
+            job_id=job.id,
+            msg="Job created successfully!!!!.",
+            success=True,
         )
-
-    if request.method == "POST":
-        input_type = Tool.query.filter(
-            Tool.id == request.form["input_account_id"]
-        ).first()
-        account_type = input_type.account_type
-
-        if account_type != EXCEL:
-            if (request.form["input_account_id"] == "None") and (
-                    request.form["output_account_id"] == "None"
-            ):
-                return redirect(
-                    url_for(
-                        ".create_job",
-                        msg="Input account and output account are the mandatory fields!!!!.",
-                        success=True,
-                    )
-                )
-
-            if len(request.form.getlist("mycheckbox")) == 0:
-                return redirect(
-                    url_for(
-                        ".create_job",
-                        msg="Please select atleast one function!!!!.",
-                        success=True,
-                    )
-                )
-
-            # elif (request.form['myob_account'] is not None and request.form['xero_account'] == 'None') or (request.form['myob_account'] == 'None' and request.form['xero_account'] is not None):
-            job = Jobs()
-            fn = request.form.getlist('mycheckbox')
-            job.functions = ",".join(fn)
-            job.name = request.form["name"]
-            job.description = request.form["description"]
-            job.input_account_id = request.form["input_account_id"]
-            job.output_account_id = request.form["output_account_id"]
-            job.start_date = request.form["start_date"]
-            job.end_date = request.form["end_date"]
-            # TODO: Create job and tasks in same transaction, rollback if anything fails
-            db.session.add(job)
-            db.session.commit()
-            # read_myob_write_qbo_task.apply_async(args=[job.id])
-            for fun in range(0, len(fn)):
-                task = Task()
-                task.function_name = fn[fun]
-                task.job_id = job.id
-                db.session.add(task)
-                db.session.commit()
-            return redirect(
-                url_for(
-                    ".tasks_by_job",
-                    job_id=job.id,
-                    msg="Job created successfully!!!!.",
-                    success=True,
-                )
-            )
-        else:
-            job_id = upload_file(request)
-            return redirect(
-                url_for(
-                    ".tasks_by_job",
-                    job_id=job_id,
-                    msg="Job created successfully!!!!.",
-                    success=True,
-                )
-            )
+    )
+    
 
 
 @blueprint.route("/myob_settings")
@@ -1915,25 +1885,37 @@ def upload_file_accountright(request):
 @blueprint.route("/file_select_data", methods=["GET", "POST"])
 
 def file_select_data():
-    url = "http://localhost:8080/AccountRight"
-    response = urllib.request.urlopen(url)
-    data = response.read()
-    dict = json.loads(data)
+    if request.method == "GET":
+        return render_template("home/file_data.html")
+    if request.method == "POST":
+        url = "http://localhost:8080/AccountRight"
+        response = urllib.request.urlopen(url)
+        data = response.read()
+        dict = json.loads(data)
+        # print(dict)
 
-    # data_file=request.form['file_data1']
-    # print(data_file,"print file name which is enter user......")
+        data_file=request.form['file_data1']
+        #print(data_file,"print file name which is enter user......")
+        
+        data1="Attander Investments Pty Ltd"
+        # print(request.form['url1'],"url1 data")
 
-    data1="Attander Investments Pty Ltd"
-    # print(request.form['url1'],"url1 data")
+        for item in dict:
+            print(item['Name'],"inside item data")
+            if item['Name'] == data_file and item["ProductVersion"] == "2023.8":
+                print(item["Id"])
+                session["input_file_name"] = item['Name']
+                session['myob_company_id'] = item["Id"]
 
-    for item in dict:
-        if item['Name'] == data1 and item["ProductVersion"] == "2023.8":
-            print(item["Id"])
-            myob_file=MYOBACCOUNTRIGHT()
-            myob_file.company_file_id=item["Id"]
-            db.session.add(myob_file)
-            db.session.commit()
-    return render_template("home/file_data.html")
+                print(session['myob_company_id'],"print session company data")
+
+                # myob_file=MYOBACCOUNTRIGHT()
+                # myob_file.company_file_id=item["Id"]
+                # db.session.add(myob_file)
+                # db.session.commit()
+                return "true"
+            else:
+                return "false"
 
 
 @blueprint.route("/qbo_file_data", methods=["GET", "POST"])
@@ -1941,37 +1923,59 @@ def file_select_data():
 def qbo_file_data():
 
     if request.method == "GET":
-                return render_template(
+
+        
+        return render_template(
             "home/qbo_file_data.html",
         )
 
 
 @blueprint.route("/qbo_auth", methods=["GET", "POST"])
 def qbo_auth():
+
+    if request.method == "POST":
     
-    CLIENT_ID = 'ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz'
-    CLIENT_SECRET = 'EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE'
-    REDIRECT_URI = 'https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl'
-    AUTHORIZATION_ENDPOINT = 'https://appcenter.intuit.com/connect/oauth2'
-    TOKEN_ENDPOINT = 'https://oauth.platform.intuit.com/oauth2/v1/tokens'
-    
-    
-#     auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
-    auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
-    print(auth_url,"print auth url")
-    # window.location.replace(auth_url,"_self")
-    webbrowser.open(auth_url,"_self")
+        # CLIENT_ID = 'ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz'
+        # CLIENT_SECRET = 'EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE'
+
+        CLIENT_ID = 'ABpWOUWtcEG1gCun5dQbQNfc7dvyalw5qVF97AkJQcn5Lh09o6'
+        CLIENT_SECRET = 'LepyjXTADW592Dq5RYUP8UbGLcH5xtqDQhrf2xJN'
+
+        REDIRECT_URI = 'http://localhost:5000/data_access'
+        AUTHORIZATION_ENDPOINT = 'https://appcenter.intuit.com/connect/oauth2'
+        TOKEN_ENDPOINT = 'https://oauth.platform.intuit.com/oauth2/v1/tokens'
+        
+        
+    #     auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
+        auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
+        print(auth_url,"print auth url")
+        # window.location.replace(auth_url,"_self")
+        webbrowser.open(auth_url,"_self")
+
+
+        
 
 @blueprint.route("/data_access", methods=["GET", "POST"])
 def data_access():
 
+    session["company_id"]=request.args.get('realmId')
+    auth_code1=request.args.get('code')
+    print(auth_code1)
+
+    print(auth_code1 ,"print data auth code")
+    print(session["company_id"],"print company id qbo")
+
+    CLIENT_ID = 'ABpWOUWtcEG1gCun5dQbQNfc7dvyalw5qVF97AkJQcn5Lh09o6'
+    CLIENT_SECRET = 'LepyjXTADW592Dq5RYUP8UbGLcH5xtqDQhrf2xJN'
+
+
     token_endpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 
-    client_id = "ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz"
-    client_secret = "EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE"
-    redirect_uri = "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl"
-    authorization_code = "AB11696594182fue9VubtgFHh6MI7S62gkazaLaGQ42CUmAXD5"
-
+    # redirect_uri = "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl"
+    redirect_uri='http://localhost:5000/data_access'
+    
+    authorization_code = auth_code1
+    
     data = {
         "grant_type": "authorization_code",
         "code": authorization_code,
@@ -1980,7 +1984,7 @@ def data_access():
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic QUJBbmdSOTlGWDJzd0dxSnkzeGVIZmVSZlZ0U0pqSHFsb3dqYWRqZUdJZzRXMG1JZHo6RUMyYWJLeTF1aEhRY0VwSURaeTdFZXJIOGk4aEtsOWdKMUFSR0lMRQ==",
+      "Authorization": "Basic QUJwV09VV3RjRUcxZ0N1bjVkUWJRTmZjN2R2eWFsdzVxVkY5N0FrSlFjbjVMaDA5bzY6TGVweWpYVEFEVzU5MkRxNVJZVVA4VWJHTGNINXh0cURRaHJmMnhKTg==",
     }
 
     response = requests.post(token_endpoint, data=data, headers=headers)
@@ -1988,12 +1992,35 @@ def data_access():
 
     if response.status_code == 200:
 
-        access_token = response.json().get("access_token")
-        refresh_token = response.json().get("refresh_token")
-        print(f"Access Token: {access_token}")
-        print(f"refresh Token: {refresh_token}")
+        session["access_token"]=response.json().get("access_token")
+        session["refresh_token"]=response.json().get("refresh_token")
+
+       
+        print(session["access_token"])
+
     else:
         print("Token failed data")
+
+    return render_template(
+            "home/start_job_account_right.html",
+        )
+        
+
+@blueprint.route("/jobs/create", methods=["GET", "POST"])
+
+def create_job_for_accountright():
+    job = Jobs()
+    job.functions = ["Chart of account","Customer","Supplier","Item"]
+    job.name = "job1"
+    job.description = "description1"
+    job.input_account_id = "1"
+    job.output_account_id = "2"
+    job.start_date = ""
+    job.end_date = ""
+    # TODO: Create job and tasks in same transaction, rollback if anything fails
+    db.session.add(job)
+    db.session.commit()
+
         
    
 

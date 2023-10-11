@@ -15,12 +15,9 @@
                 <div class="col-md-6">
                     <div class="form-group mt-6">
                         <label for="description">File Name</label>
-                        <input type="text"  value="description" placeholder="Enter file name" required>                   
+                        <input type="text"  value="" id="filename" placeholder="Enter file name" required>                   
                     </div>
-
-                    <button class="btn btn-info ms-10 mb-3" id="button11"><a href="/qbo_file_data">submit</a></button>
-
-
+                    <button id="submit_file_name" class="btn btn-info ms-10 mb-3">submit</button>
                 </div>        
             </div>
     </div>
@@ -38,12 +35,25 @@
 <script>
 
 $(document).ready(function() {
-        $('#button11').click(function() {
-        var x = $("input:text").val(); 
+        $('#submit_file_name').click(function() {
+        var x = $("#filename").val(); 
         $.ajax({
         type: "POST",
         url: "/file_select_data",
-        data:{file_data1:x}
+        data:{file_data1:x},
+
+        success: function(data) {
+                        var result = $.parseJSON(data)
+                        console.log(result)
+                        if(result==true){
+                            window.location='/qbo_file_data'
+                        }else{
+                            alert("Please enter correct file name")
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Error:", error);
+                    }
         
      });
      });
