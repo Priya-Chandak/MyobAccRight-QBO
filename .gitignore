@@ -1,0 +1,15 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+*.pyc
+apps/_pycache_
+migrations/
+apps/authentication/
+apps/tasks/__pycache__
+apps/home/__pycache__
+apps/xero/_pycache_
+apps/qbo/account/_pycache_
+apps/xero/qbo_writer/_pycache_
+apps/qbo/reader/_pycache_
+apps/files
+venv/
