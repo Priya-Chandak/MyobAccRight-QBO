@@ -6,7 +6,7 @@ from flask import session
 
 from apps import db
 from apps.home.models import Jobs
-from apps.home.models import Tool, ToolSettings
+from apps.home.models import Tool, ToolSettings,MYOBACCOUNTRIGHTQboTokens
 
 
 def get_myob_settings(job_id):
@@ -18,6 +18,8 @@ def get_myob_settings(job_id):
         'Authorization': 'Basic QWRtaW5pc3RyYXRvcjo='
         }
 
+        data1 = db.session.query(MYOBACCOUNTRIGHTQboTokens).filter(MYOBACCOUNTRIGHTQboTokens.job_id == job_id).first()
+
         # keys = (
         #     db.session.query(Jobs, ToolSettings.keys, ToolSettings.values, ToolSettings.added_on, ToolSettings.id)
         #     .join(Tool, Jobs.input_account_id == Tool.id)
@@ -25,16 +27,8 @@ def get_myob_settings(job_id):
         #     .filter(Jobs.id == job_id)
         #     .all()
         # )
-
-        if "myob_company_id" in session:
-            company_file_id =session["myob_company_id"] 
-        else:
-            company_file_id="0282c77d-b037-4cca-9d18-25d0abfd7d97"
         
-           
-        
-
-        base_url = f"http://localhost:8080/AccountRight/{company_file_id}/"
+        base_url = f"http://localhost:8080/AccountRight/{data1.Myob_company_id}/"
 
         return payload, base_url, headers
         

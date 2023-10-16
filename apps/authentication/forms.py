@@ -82,3 +82,8 @@ class CreateEmailForm(FlaskForm):
         "input_tool", id="input_tool", validators=[DataRequired()]
     )
     
+class CreateCustomerInfoForm(FlaskForm):
+    Email = StringField("Email", id="Email", validators=[DataRequired()])
+    Company = StringField("Company", id="Company", validators=[DataRequired()])
+    First_Name = StringField("First_Name", id="First_Name", validators=[DataRequired()])
+    Last_Name = StringField("Last_Name", id="Last_Name", validators=[DataRequired()])

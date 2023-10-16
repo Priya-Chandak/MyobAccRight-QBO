@@ -152,7 +152,6 @@ class TaskExecutionStatus(db.Model):
     created_at = db.Column(db.DateTime(timezone=True))
     status = db.Column(db.Integer, default=2)
 
-
 class TaskExecutionStep(db.Model):
     __tablename__ = "task_execution_steps"
     id = db.Column(db.Integer, primary_key=True)
@@ -167,3 +166,26 @@ class MYOBACCOUNTRIGHT(db.Model):
     __tablename__ = "Myob_account_right"
     id = db.Column(db.Integer, primary_key=True)
     company_file_id = db.Column(db.String(50))
+
+
+class CustomerInfo(db.Model):
+    __tablename__ = "customer_info"
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
+    File_Name = db.Column(db.String(1264))
+    Email = db.Column(db.String(625))
+    First_Name = db.Column(db.String(625))
+    Last_Name = db.Column(db.String(625))
+    created_at = db.Column(db.DateTime(timezone=True))
+    
+
+class MYOBACCOUNTRIGHTQboTokens(db.Model):
+    __tablename__ = "MYOBACCOUNTRIGHT_QBO_Tokens"
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
+    Myob_company_id = db.Column(db.String(100))
+    qbo_access_token = db.Column(db.String(4000))
+    qbo_refresh_token = db.Column(db.String(4000))
+    qbo_company_id = db.Column(db.String(100))
+    created_at = db.Column(db.DateTime(timezone=True))
+    

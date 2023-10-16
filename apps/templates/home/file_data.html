@@ -1,92 +1,100 @@
-{% block stylesheets %}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
-<style>
-    /* Custom CSS for your form page */
-    body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f2f2f2;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xero to QBO Conversion</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .infographic-img {
+            max-width: 100%;
+            height: auto;
+        }
+        .card {
+            width: 100%;
+            max-width: 820px;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+        }
+        .form-control {
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid #ccc;
+        }
 
-    .custom-card {
-        width: 100%;
-        max-width: 600px;
-        padding: 20px;
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+    </style>
 
-    .custom-form-group {
-        margin-bottom: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-    }
+</head>
+<body>
+<div class="container">
 
-    .custom-field {
-        flex: 1;
-    }
-
-    .custom-label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .custom-input {
-        width: 95%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .custom-button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        background-color: #007BFF;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .custom-button:hover {
-        background-color: #0056b3;
-    }
-</style>
-{% endblock stylesheets %}
-
-{% block content %}
-<div class="custom-card">
-    <h1 style="text-align: center;">Myob Accountright File Details</h1>
-    <form>
-        <div class="custom-form-group">
-            <div class="custom-field">
-                <label for="firstname" class="custom-label">First Name</label>
-                <input type="text" id="firstname" class="custom-input" placeholder="Enter first name" required>
-            </div>
-            <div class="custom-field">
-                <label for="lastname" class="custom-label">Last Name</label>
-                <input type="text" id="lastname" class="custom-input" placeholder="Enter last name" required>
-            </div>
+    <img class="infographic-img mb-4" src="/static/assets/img/mmc_logo.png" alt="Infographic" style="width: 70px;">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text"><b>LET'S MOVE YOUR BOOKS</b></h1>
+            <h3>Contact Details</h3>
+            <p>Please provide your contact details so we can send you updates about the status of your data migration.</p>
         </div>
-        <div class="custom-form-group">
-            <div class="custom-field">
-                <label for="email" class="custom-label">Email</label>
-                <input type="email" id="email" class="custom-input" placeholder="Enter email" required>
-            </div>
-            <div class="custom-field">
-                <label for="filename" class="custom-label">File Name</label>
-                <input type="text" id="filename" class="custom-input" placeholder="Enter file name" required>
-            </div>
+        <div class="card-body">
+            <form enctype="multipart/form-data" method="post">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputCompany">Company <span style="color:red">*</span></label>
+                            <input type="text" class="form-control form-control-lg" id="inputCompany" name="inputCompany" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputEmail">Email <span style="color:red">*</span></label>
+                            <input type="email" class="form-control form-control-lg" id="inputEmail" name="inputEmail"required>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputFirstName">First Name</label>
+                            <input type="text" class="form-control form-control-lg" id="inputFirstName" name="inputFirstName" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputLastName">Last Name</label>
+                            <input type="text" class="form-control form-control-lg" id="inputLastName" name="inputLastName" required>
+                        </div>
+                    </div>
+                    
+                </div>
+                <button class="btn btn-success mb-3">Let's Go</button>
+            </form>
         </div>
-        <button id="submit_file_name" class="custom-button">Submit</button>
-    </form>
+    </div>
 </div>
-{% endblock content %}
+
+<!-- jQuery and Bootstrap JS CDN links -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Your JavaScript code can be placed here -->
+</body>
+</html>

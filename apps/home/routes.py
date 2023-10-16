@@ -7,9 +7,10 @@ from apps.util.qbo_util import post_data_in_myob, post_data_in_qbo,retry_payload
 import asyncio
 import ast
 import urllib.request, json
+from redis import StrictRedis
 
 import openpyxl
-from flask import render_template, redirect, request, url_for,jsonify,session
+from flask import render_template, redirect, request, url_for,jsonify,session,flash
 from flask.helpers import get_root_path
 from flask_login import login_required
 from jinja2 import TemplateNotFound
@@ -27,17 +28,20 @@ import base64
 
 from apps import db
 from apps.authentication.forms import CreateAccountForm
-from apps.authentication.forms import CreateJobForm, CreateSettingForm,CreateSelectidForm,CreateIdNameForm,CreateEmailForm,CreateauthcodeForm,FileNameForm
+from apps.authentication.forms import CreateJobForm, CreateSettingForm,CreateSelectidForm,CreateIdNameForm,CreateEmailForm,CreateauthcodeForm,FileNameForm,CreateCustomerInfoForm
 from apps.authentication.models import Users
 from apps.home import blueprint
 from apps.home.models import EntityDataReadDetails
-from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus, TaskExecutionStep,ToolId,MYOBACCOUNTRIGHT
+from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus, TaskExecutionStep,ToolId,MYOBACCOUNTRIGHT,MYOBACCOUNTRIGHTQboTokens,CustomerInfo
 from apps.home.models import MyobSettings, QboSettings, XeroSettings, Tool, ToolSettings
 from apps.myconstant import *
 from apps.tasks.myob_to_qbo_task import read_myob_write_qbo_task
 from apps.util.db_mongo import get_mongodb_database
 from apps.util.qbo_util import get_pagination_for_records
 from apps.mmc_settings.all_settings import *
+
+redis = StrictRedis(host='localhost', port=6379, decode_responses=True)
+
 
 @blueprint.route("/index")
 @login_required
@@ -158,30 +162,8 @@ def start_job(job_id):
 
 @blueprint.route("/startJobByID", methods=["POST"])
 def startJobByID():
-    job_functions=['Customer','Supplier']
-    # job_functions=['Chart of account','Job','Customer','Supplier','Journal','Spend Money','Receive Money','Bank Transfer','Bill','Invoice','Bill Payment','Invoice Payment']
-    job = Jobs()
-    # job.functions = "Chart of account,Job,Customer,Supplier,Journal,Spend Money,Receive Money,Bank Transfer,Bill,Invoice,Bill Payment,Invoice Payment"
-    job.functions="Customer,Supplier"
-    length = 10 # You can change this to your desired length
-    job.name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))  
-    print(job.name)    
-    job.description = "description1"
-    job.input_account_id = 1
-    job.output_account_id = 2
-    job.start_date = ""
-    job.end_date = ""
-    db.session.add(job)
-    db.session.commit()
-    for fun in range(0, len(job_functions)):
-        print('inside for loop',job.id)
-        task = Task()
-        task.function_name = job_functions[fun]
-        task.job_id = job.id
-        db.session.add(task)
-        db.session.commit()
-
-    asyncio.run(read_myob_write_qbo_task(job.id))
+    job_id=redis.get('my_key')
+    asyncio.run(read_myob_write_qbo_task(job_id))
     return json.dumps({'status': 'success'})
 
 import requests
@@ -1771,71 +1753,7 @@ def edit_user(user_id):
         return render_template("home/register.html", form=create_account_form)
 
 
-@blueprint.route("/getInputAccountType", methods=["POST"])
-@login_required
-def getInputAccountType():
-    input_type = request.form['input_type']
-    input_type = Tool.query.filter(
-        Tool.id == input_type
-    ).first()
-    return json.dumps({'account_type': input_type.account_type})
-    # return jsonify(input_type)
 
-@blueprint.route("/getToolType", methods=["POST"])
-@login_required
-def getToolType():
-    xero_tool = Tool.query.filter(
-        Tool.account_type == "Xero"
-    ).all()
-    return render_template("home/create_tool_settings.html", xero_tool=xero_tool)
-    # return json.dumps({'account_type': xero_tool})
-
-
-@blueprint.route("/upload")
-@login_required
-def upload_file(request):
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    uploaded_file = request.files['excelfile']
-    job = Jobs()
-    job.name = request.form["name"]
-    job.description = request.form["description"]
-    job.input_account_id = request.form["input_account_id"]
-    job.output_account_id = request.form["output_account_id"]
-    job.filename = uploaded_file.filename
-    # TODO: Create job and tasks in same transaction, rollback if anything fails
-    db.session.add(job)
-    db.session.commit()
-    filename = f'{job.id}' + '_' + secure_filename(uploaded_file.filename)
-    print(get_root_path('apps'))
-    if filename != "":
-        # uploaded_file.save('app/files/',filename)
-
-        uploaded_file.save(os.path.join(get_root_path('apps'), 'files/', filename))
-    path = os.path.join(get_root_path('apps'), 'files/', filename)
-    print(path)
-    # data1 = openpyxl.load_workbook(path)
-    # sheets = data1.sheetnames
-    # print(sheets)
-
-    # fn = request.form.getlist('mycheckbox')
-    # job.functions = ",".join(fn)
-
-    # for fun in range(0, len(sheets)):
-    #     task = Task()
-    #     task.function_name = sheets[fun]
-    #     task.job_id = job.id
-    #     db.session.add(task)
-    #     db.session.commit()
-    # return job.id
-
-    # save_path = "/uploads"apps/home/files
-    # file_name = "abc.xlsx"
-    # completeName = os.path.join(save_path, file_name)
-    # file1 = open(completeName, "w")
-    # file1.write("file information")
-    # file1.close()
-    # print("file created")
-    # return send_from_directory(app.config['UPLOAD_PATH'],filename)
 
 
 
@@ -1885,48 +1803,112 @@ def upload_file_accountright(request):
 @blueprint.route("/file_select_data", methods=["GET", "POST"])
 
 def file_select_data():
+    create_customer_info_form = CreateCustomerInfoForm(request.form)
     if request.method == "GET":
-        return render_template("home/file_data.html")
+        return render_template("home/file_data.html", form=create_customer_info_form)
     if request.method == "POST":
+    
+        job_functions=['Customer','Supplier']
+        # job_functions=['Chart of account','Job','Customer','Supplier','Journal','Spend Money','Receive Money','Bank Transfer','Bill','Invoice','Bill Payment','Invoice Payment']
+        job = Jobs()
+        # job.functions = "Chart of account,Job,Customer,Supplier,Journal,Spend Money,Receive Money,Bank Transfer,Bill,Invoice,Bill Payment,Invoice Payment"
+        job.functions="Customer,Supplier"
+        length = 10 # You can change this to your desired length
+        job.name = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))  
+        print(job.name)    
+        job.description = "description1"
+        job.input_account_id = 1
+        job.output_account_id = 2
+        job.start_date = ""
+        job.end_date = ""
+        db.session.add(job)
+        db.session.commit()
+        for fun in range(0, len(job_functions)):
+            print('inside for loop',job.id)
+            task = Task()
+            task.function_name = job_functions[fun]
+            task.job_id = job.id
+            db.session.add(task)
+            db.session.commit()
+
+            key_to_clear = 'my_key'
+            redis.delete(key_to_clear)
+
+            redis.set('my_key', job.id)
+            print(redis.get('my_key'),"request data same function ")
+
+        customer_info= CustomerInfo()
+        print("inside customer info table")
+        customer_info.job_id=job.id
+        customer_info.File_Name = request.form["inputCompany"]
+        customer_info.Email = request.form["inputEmail"]
+        customer_info.First_Name = request.form["inputFirstName"]
+        customer_info.Last_Name = request.form["inputLastName"]
+        db.session.add(customer_info)
+        db.session.commit()
+
+        myob_company_name = CustomerInfo.query.filter(CustomerInfo.job_id == redis.get('my_key')).first()
+        print(myob_company_name.File_Name,"print company name ")
         url = "http://localhost:8080/AccountRight"
         response = urllib.request.urlopen(url)
         data = response.read()
         dict = json.loads(data)
+        print(dict)
+        file_name_data=myob_company_name.File_Name
+        
+        for item in dict:
+            if item['Name'].lower() == file_name_data.lower() and item["ProductVersion"] == "2023.8":
+                myob_file=MYOBACCOUNTRIGHTQboTokens()
+                myob_file.job_id=redis.get('my_key')
+                myob_file.Myob_company_id=item["Id"]
+                db.session.add(myob_file)
+                db.session.commit()
+                flash("File select successfully")
+                return redirect(
+                    url_for(
+                        ".qbo_file_data", msg="Myob accountright Token added successfully!!!!.", success=True
+                    )
+                        )
+            else:
+                print("Please enter correct file name")
+                return redirect(
+                    url_for(
+                        ".file_data", success=False
+                    )
+                        )
+                
+
+
+        
+
         # print(dict)
 
+        print("get file data")
+
         data_file=request.form['file_data1']
+        print(data_file,"-------data_file-------")
         #print(data_file,"print file name which is enter user......")
         
         data1="Attander Investments Pty Ltd"
-        # print(request.form['url1'],"url1 data")
 
-        for item in dict:
-            print(item['Name'],"inside item data")
-            if item['Name'] == data_file and item["ProductVersion"] == "2023.8":
-                print(item["Id"])
-                session["input_file_name"] = item['Name']
-                session['myob_company_id'] = item["Id"]
-
-                print(session['myob_company_id'],"print session company data")
-
-                # myob_file=MYOBACCOUNTRIGHT()
-                # myob_file.company_file_id=item["Id"]
-                # db.session.add(myob_file)
-                # db.session.commit()
-                return "true"
-            else:
-                return "false"
-
+        
 
 @blueprint.route("/qbo_file_data", methods=["GET", "POST"])
 
 def qbo_file_data():
 
     if request.method == "GET":
-
-        
         return render_template(
             "home/qbo_file_data.html",
+        )
+
+
+@blueprint.route("/file_data", methods=["GET", "POST"])
+
+def file_data():
+    if request.method == "GET":
+        return render_template(
+            "home/file_data.html",
         )
 
 
@@ -1957,25 +1939,15 @@ def qbo_auth():
 
 @blueprint.route("/data_access", methods=["GET", "POST"])
 def data_access():
-
-    session["company_id"]=request.args.get('realmId')
     auth_code1=request.args.get('code')
-    print(auth_code1)
-
+    realme_id=request.args.get('realmId')
     print(auth_code1 ,"print data auth code")
-    print(session["company_id"],"print company id qbo")
-
     CLIENT_ID = 'ABpWOUWtcEG1gCun5dQbQNfc7dvyalw5qVF97AkJQcn5Lh09o6'
     CLIENT_SECRET = 'LepyjXTADW592Dq5RYUP8UbGLcH5xtqDQhrf2xJN'
-
-
     token_endpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
-
     # redirect_uri = "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl"
     redirect_uri='http://localhost:5000/data_access'
-    
     authorization_code = auth_code1
-    
     data = {
         "grant_type": "authorization_code",
         "code": authorization_code,
@@ -1989,14 +1961,13 @@ def data_access():
 
     response = requests.post(token_endpoint, data=data, headers=headers)
     print(response.json())
-
     if response.status_code == 200:
-
-        session["access_token"]=response.json().get("access_token")
-        session["refresh_token"]=response.json().get("refresh_token")
-
-       
-        print(session["access_token"])
+        token_data = MYOBACCOUNTRIGHTQboTokens.query.filter_by(job_id=redis.get('my_key')).first()
+        print(token_data)
+        token_data.qbo_access_token=response.json().get("access_token")
+        token_data.qbo_refresh_token=response.json().get("refresh_token")
+        token_data.qbo_company_id=realme_id
+        db.session.commit()
 
     else:
         print("Token failed data")
