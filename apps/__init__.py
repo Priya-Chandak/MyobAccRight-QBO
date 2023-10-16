@@ -73,7 +73,7 @@ def configure_celery(app=None):
     app.config["BROKER_URL"] = "redis://127.0.0.1:6379"
     app.config["CELERY_RESULT_BACKEND"] = "redis://127.0.0.1:6379"
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "mysql+pymysql://" + "root" + ":" + "root" + "@localhost:3307/myob_to_qbo"
+        "mysql+pymysql://" + "root" + ":" + "mmg" + "@localhost:3306/myob_to_qbo"
     )
     app.config["MONGO_URI"] = "mongodb://localhost:27017/MMC"
 

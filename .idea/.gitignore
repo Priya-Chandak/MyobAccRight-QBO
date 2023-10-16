@@ -14,3 +14,4 @@ apps/qbo/reader/_pycache_
 venv/
 .venv
 apps/files
+venv
