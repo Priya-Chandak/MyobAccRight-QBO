@@ -16,6 +16,9 @@ from apps.home import blueprint
 from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus, TaskExecutionStep,ToolId,MYOBACCOUNTRIGHT,MYOBACCOUNTRIGHTQboTokens,CustomerInfo
 from apps.tasks.myob_to_qbo_task import read_myob_write_qbo_task
 from apps.mmc_settings.all_settings import *
+
+from apps.myconstant import * 
+
 redis = StrictRedis(host='localhost', port=6379, decode_responses=True)
 
 @blueprint.route("/jobs")
@@ -187,7 +190,7 @@ def file_select_data():
         file_name_data=myob_company_name.File_Name
         
         for item in dict:
-            if item['Name'].lower() == file_name_data.lower() and item["ProductVersion"] == "2023.8":
+            if item['Name'].lower() == file_name_data.lower() and item["ProductVersion"] == ProductVersion:
                 myob_file=MYOBACCOUNTRIGHTQboTokens()
                 myob_file.job_id=redis.get('my_key')
                 myob_file.Myob_company_id=item["Id"]
@@ -200,21 +203,14 @@ def file_select_data():
                     )
                         )
             else:
-                print("Please enter correct file name")
+                flash("Please enter correct file name","error")
                 return redirect(
                     url_for(
-                        ".file_data", success=False
+                        ".file_select_data"
                     )
                         )
                 
 
-        print("get file data")
-
-        data_file=request.form['file_data1']
-        print(data_file,"-------data_file-------")
-        #print(data_file,"print file name which is enter user......")
-        
-        data1="Attander Investments Pty Ltd"
 
         
 
@@ -227,7 +223,7 @@ def qbo_file_data():
             "home/qbo_file_data.html",
         )
 
-@blueprint.route("/file_data", methods=["GET", "POST"])
+@blueprint.route("/file_data", methods=["GET"])
 
 def file_data():
     if request.method == "GET":
