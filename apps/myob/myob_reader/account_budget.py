@@ -1,12 +1,9 @@
 import traceback
 from ast import Break
-
 import requests
-
 from apps.home.data_util import add_job_status
 from apps.mmc_settings.all_settings import *
 from apps.util.db_mongo import get_mongodb_database
-
 
 def get_account_budget(job_id):
     try:

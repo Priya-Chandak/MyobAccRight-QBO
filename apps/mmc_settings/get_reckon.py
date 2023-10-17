@@ -5,8 +5,6 @@ import requests
 from apps import db
 from apps.home.models import Jobs
 from apps.home.models import Tool, ToolSettings
-# from apps.util.qbo_util import add_job_status
-
 
 def get_reckon_settings(job_id):
     try:

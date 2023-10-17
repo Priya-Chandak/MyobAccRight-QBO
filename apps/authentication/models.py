@@ -3,7 +3,6 @@ from flask_login import UserMixin
 from apps import db, login_manager
 from apps.authentication.util import hash_pass
 
-
 class Users(db.Model, UserMixin):
     __tablename__ = "Users"
 
@@ -36,7 +35,6 @@ class Users(db.Model, UserMixin):
 @login_manager.user_loader
 def user_loader(id):
     return Users.query.filter_by(id=id).first()
-
 
 @login_manager.request_loader
 def request_loader(request):

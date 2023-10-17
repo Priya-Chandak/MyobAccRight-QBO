@@ -5,7 +5,6 @@ from apps.home.models import Jobs, JobExecutionStatus, Task, TaskExecutionStatus
 
 traceback.print_exc()
 
-
 def add_job_status(job_id, status):
     session = None
     try:
@@ -19,7 +18,6 @@ def add_job_status(job_id, status):
     finally:
         if session is not None:
             session.close()
-
 
 def add_task_status(job_id, table_name, operation="read", started_or_complete="started"):
     session = None
@@ -52,39 +50,6 @@ def add_task_status(job_id, table_name, operation="read", started_or_complete="s
     finally:
         if session is not None:
             session.close()
-
-
-# def add_task_status(job_id, table_name, operation="read", started_or_complete="started"):
-#     session = None
-#     try:
-#         task_execution_status = TaskExecutionStatus()
-#         task_execution_status.job_id = job_id
-#         task_execution_status.task_id = Task.id
-#         task_execution_status = "started......."
-#         if started_or_complete == "complete":
-#             job_started_or_complete = "completed"
-
-#         if started_or_complete == "reading completed":
-#             task_execution_status.read_successful = True
-#             task_execution_status="reading completed......."
-#         else:
-#             task_execution_status.read_successful = False
-
-#         if started_or_complete == "writing completed":
-#             task_execution_status.write_successful = True
-#             task_execution_status ="writing completed......."
-#         else:
-#             task_execution_status.write_successful = False
-
-#         db.session.add(task_execution_status)
-#         db.session.commit()
-#     except Exception as e:
-#         import traceback
-
-#         traceback.print_exc()
-#     finally:
-#         if session is not None:
-#             session.close()
 
 
 def get_job_details(job_id):

@@ -1,12 +1,8 @@
 import traceback
-
 import requests
-
 from apps import db
-from apps.home.data_util import add_job_status
 from apps.home.models import Jobs
 from apps.home.models import Tool, ToolSettings
-
 
 def post_myobledger_settings(job_id):
     try:

@@ -10,7 +10,6 @@ from apps.home.models import Tool, ToolSettings
 def get_xero_settings(job_id):
     try:
         url="https://identity.xero.com/connect/token?="
-        
 
         keys = (
             db.session.query(Jobs, ToolSettings.keys, ToolSettings.values,ToolSettings.id)
@@ -51,36 +50,11 @@ def get_xero_settings(job_id):
             if row[1] == "state":
                 state = row[2]
 
-
-
         CLIENT_ID = f"{client_id}"
         CLIENT_SECRET=f"{client_secret}"
         clientIdSecret = CLIENT_ID + ':' + CLIENT_SECRET
         encoded_u = base64.b64encode(clientIdSecret.encode()).decode()
         auth_code = "%s" % encoded_u
-
-
-        # for row in data1:
-        #     if row[4] == "client_id":
-        #         client_id ==  row[5]
-        #     if row[4] == "client_secret":
-        #         client_secret = row[5]
-        #     if row[4] == "company_file_uri":
-        #         company_file_uri = row[5]
-        #     if row[4] == "xero-tenant-id":
-        #         xero_tenant_id1 = row[5]
-        #     if row[4] == "refresh_token":
-        #         refresh_token1 = row[5]
-        #         refresh_token_data_id1 = row[2]
-        #     if row[4] == "access_token":
-        #         access_token1 = row[5]
-        #         access_token_data_id1 =row[2]
-        #     if row[4] == "re_directURI":
-        #         re_directURI = row[5]
-        #     if row[4] == "scopes":
-        #         scopes = row[5]
-        #     if row[4] == "state":
-        #         state = row[5]
 
         payload = {'grant_type': 'refresh_token',
         'refresh_token': f'{refresh_token}',

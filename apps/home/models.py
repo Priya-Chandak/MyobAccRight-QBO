@@ -110,7 +110,6 @@ class Tool(db.Model):
     tool_type = db.Column(db.String(255))
     is_active = db.Column(db.Boolean(), default=True)
 
-
 class ToolSettings(db.Model):
     __tablename__ = "tool_settings"
 
@@ -119,7 +118,6 @@ class ToolSettings(db.Model):
     keys = db.Column(db.Text)
     values = db.Column(db.Text)
     added_on = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-
 
 class Task(db.Model):
     __tablename__ = "task"
@@ -130,7 +128,6 @@ class Task(db.Model):
     is_successful = db.Column(db.Integer, default=3)
     read = db.Column(db.Integer, default=3)
     write = db.Column(db.Integer, default=3)
-
 
 class ToolId(db.Model):
     __tablename__="ToolId"
@@ -167,7 +164,6 @@ class MYOBACCOUNTRIGHT(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company_file_id = db.Column(db.String(50))
 
-
 class CustomerInfo(db.Model):
     __tablename__ = "customer_info"
     id = db.Column(db.Integer, primary_key=True)
@@ -177,7 +173,6 @@ class CustomerInfo(db.Model):
     First_Name = db.Column(db.String(625))
     Last_Name = db.Column(db.String(625))
     created_at = db.Column(db.DateTime(timezone=True))
-    
 
 class MYOBACCOUNTRIGHTQboTokens(db.Model):
     __tablename__ = "MYOBACCOUNTRIGHT_QBO_Tokens"
@@ -188,4 +183,3 @@ class MYOBACCOUNTRIGHTQboTokens(db.Model):
     qbo_refresh_token = db.Column(db.String(4000))
     qbo_company_id = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True))
-    

@@ -1,12 +1,8 @@
 import traceback
 from ast import Break
-
 import requests
-
-from apps.home.data_util import get_job_details, add_job_status
 from apps.mmc_settings.all_settings import get_settings_myob
 from apps.util.db_mongo import get_mongodb_database
-
 
 def get_all_bill_for_payments(job_id,task_id):
     try:

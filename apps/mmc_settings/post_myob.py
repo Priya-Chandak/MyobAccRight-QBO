@@ -1,25 +1,14 @@
 import traceback
 from datetime import datetime
-
 import requests
-
 from apps import db
 from apps.home.models import Jobs
 from apps.home.models import Tool, ToolSettings
-
 
 def post_myob_settings(job_id):
     try:
         url = "https://secure.myob.com/oauth2/v1/authorize/"
         token_generated_on = datetime.now()
-        # refresh_token_data_id = None
-        # access_token_data_id = None
-        # client_id = None
-        # client_secret = None
-        # company_file_uri = None
-        # company_file_id = None
-        # refresh_token = None
-        # access_token = None
 
         keys = (
             db.session.query(Jobs, ToolSettings.keys, ToolSettings.values, ToolSettings.added_on, ToolSettings.id)
@@ -47,8 +36,6 @@ def post_myob_settings(job_id):
                 token_generated_on = row[3]
             if row[1] == "redirect_uri":
                 redirect_uri = row[2]
-
-            
 
         difference_of_time = (datetime.now() - token_generated_on).seconds
         

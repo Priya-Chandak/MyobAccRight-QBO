@@ -4,12 +4,9 @@ from wtforms.validators import Email, DataRequired
 
 
 # login and registration
-
-
 class LoginForm(FlaskForm):
     username = StringField("Username", id="username_login", validators=[DataRequired()])
     password = PasswordField("Password", id="pwd_login", validators=[DataRequired()])
-
 
 class CreateAccountForm(FlaskForm):
     first_name = StringField(
@@ -38,14 +35,10 @@ class CreateJobForm(FlaskForm):
     )
     is_active = BooleanField("is_active", id="is_active", validators=[DataRequired()])
 
-
-
 class CreateSelectidForm(FlaskForm):
     id_select = StringField(
         "id", id="id_select", validators=[DataRequired()]
     )
-    
-   
 
 class CreateSettingForm(FlaskForm):
     name = StringField("name", id="name", validators=[DataRequired()])
