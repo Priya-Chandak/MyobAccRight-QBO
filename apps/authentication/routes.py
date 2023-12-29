@@ -12,6 +12,11 @@ from apps.authentication.util import verify_pass
 def route_default():
     return redirect(url_for("home_blueprint.upload_file_myobaccountright"))
 
+@blueprint.route("/User_data")
+def default_user_data():
+    return redirect(url_for("home_blueprint.User_info"))
+
+
 # Login & Registration
 @blueprint.route("/login", methods=["GET", "POST"])
 def login():
@@ -26,7 +31,8 @@ def login():
         # Check the password
         if user and verify_pass(password, user.password):
             login_user(user)
-            return redirect(url_for("authentication_blueprint.route_default"))
+            print(user)
+            return redirect(url_for("home_blueprint.User_info"))
 
         # Something (user or pass) is not ok
         return render_template(
@@ -35,7 +41,7 @@ def login():
 
     if not current_user.is_authenticated:
         return render_template("accounts/login.html", form=login_form)
-    return redirect(url_for("home_blueprint.upload_file_myobaccountright"))
+    return redirect(url_for("home_blueprint.User_info"))
 
 @blueprint.route("/logout")
 def logout():

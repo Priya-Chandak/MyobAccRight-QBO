@@ -7,9 +7,11 @@ from redis import StrictRedis
 from flask import render_template, redirect, request, url_for,jsonify,session,flash
 from flask_login import login_required
 from werkzeug.utils import secure_filename
+from sqlalchemy import desc
 import json
 import requests
 import webbrowser
+from apps.util.db_mongo import get_mongodb_database
 import base64
 from apps.authentication.forms import CreateJobForm, CreateSettingForm,CreateSelectidForm,CreateIdNameForm,CreateEmailForm,CreateauthcodeForm,FileNameForm,CreateCustomerInfoForm
 from apps.home import blueprint
@@ -181,8 +183,8 @@ def file_select_data():
         db.session.commit()
 
         myob_company_name = CustomerInfo.query.filter(CustomerInfo.job_id == redis.get('my_key')).first()
-        print(myob_company_name.File_Name,"print company name ")
-        url = "http://localhost:8080/AccountRight"
+     
+        url = Accountright_uri
         response = urllib.request.urlopen(url)
         data = response.read()
         dict = json.loads(data)
@@ -199,9 +201,10 @@ def file_select_data():
                 flash("File select successfully")
                 return redirect(
                     url_for(
-                        ".qbo_file_data", msg="Myob accountright Token added successfully!!!!.", success=True
+                        ".qbo_file_data", msg="Myob accountright Token added successfully!!!!.", success=True,
+                        
                     )
-                        )
+                )
             else:
                 flash("Please enter correct file name","error")
                 return redirect(
@@ -239,13 +242,12 @@ def qbo_auth():
         # CLIENT_ID = 'ABAngR99FX2swGqJy3xeHfeRfVtSJjHqlowjadjeGIg4W0mIdz'
         # CLIENT_SECRET = 'EC2abKy1uhHQcEpIDZy7EerH8i8hKl9gJ1ARGILE'
 
-        CLIENT_ID = 'ABpWOUWtcEG1gCun5dQbQNfc7dvyalw5qVF97AkJQcn5Lh09o6'
-        CLIENT_SECRET = 'LepyjXTADW592Dq5RYUP8UbGLcH5xtqDQhrf2xJN'
+        CLIENT_ID = QBO_CI
+        CLIENT_SECRET = QBO_CS
 
-        REDIRECT_URI = 'http://localhost:5000/data_access'
-        AUTHORIZATION_ENDPOINT = 'https://appcenter.intuit.com/connect/oauth2'
-        TOKEN_ENDPOINT = 'https://oauth.platform.intuit.com/oauth2/v1/tokens'
-
+        REDIRECT_URI = QBO_REDIRECT
+        AUTHORIZATION_ENDPOINT = QBO_Authorization
+        TOKEN_ENDPOINT = QBO_Token
     #     auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
         auth_url = f'{AUTHORIZATION_ENDPOINT}?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&response_type=code&scope=com.intuit.quickbooks.accounting&state=12345'
         print(auth_url,"print auth url")
@@ -257,12 +259,16 @@ def data_access():
     auth_code1=request.args.get('code')
     realme_id=request.args.get('realmId')
     print(auth_code1 ,"print data auth code")
-    CLIENT_ID = 'ABpWOUWtcEG1gCun5dQbQNfc7dvyalw5qVF97AkJQcn5Lh09o6'
-    CLIENT_SECRET = 'LepyjXTADW592Dq5RYUP8UbGLcH5xtqDQhrf2xJN'
-    token_endpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+    CLIENT_ID = QBO_CI
+    CLIENT_SECRET = QBO_CS
+    token_endpoint = QBO_Token
     # redirect_uri = "https://developer.intuit.com/v2/OAuth2Playground/RedirectUrl"
-    redirect_uri='http://localhost:5000/data_access'
-    authorization_code = auth_code1
+    redirect_uri=QBO_REDIRECT
+    clientIdSecret = CLIENT_ID + ':' + CLIENT_SECRET
+    encoded_u = base64.b64encode(clientIdSecret.encode()).decode()
+    auth_code = "%s" % encoded_u
+
+    authorization_code = request.args.get("code")
     data = {
         "grant_type": "authorization_code",
         "code": authorization_code,
@@ -271,7 +277,7 @@ def data_access():
 
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": "Basic QUJwV09VV3RjRUcxZ0N1bjVkUWJRTmZjN2R2eWFsdzVxVkY5N0FrSlFjbjVMaDA5bzY6TGVweWpYVEFEVzU5MkRxNVJZVVA4VWJHTGNINXh0cURRaHJmMnhKTg==",
+     'Authorization': "Basic" "  " + f'{auth_code}',
     }
 
     response = requests.post(token_endpoint, data=data, headers=headers)
@@ -306,6 +312,328 @@ def create_job_for_accountright():
     # TODO: Create job and tasks in same transaction, rollback if anything fails
     db.session.add(job)
     db.session.commit()
+
+
+
+# @blueprint.route("/customerinfo_email", methods=["GET", "POST"])
+# def get_customerinfo_email():
+#
+#     customer_info_data = customer_info.query.filter(
+#         customer_info.job_id == redis.get('my_key')).first()
+#
+#     print(customer_info_data.Email, "customer info email")
+#     customer_email = customer_info_data.Email
+#
+#     return customer_email
+
+
+# @blueprint.route("/sent_email_to_customer", methods=["GET", "POST"])
+# def sent_email_to_customer():
+#     # Specify your AWS access key and secret key directly
+#     aws_access_key_id = aws_access_key_id1
+#     aws_secret_access_key = aws_secret_access_key1
+#     region_name = region_name1
+#     # Initialize Boto3 SQS client with the credentials
+#     sqs = boto3.client('sqs', region_name=region_name, aws_access_key_id=aws_access_key_id,
+#                        aws_secret_access_key=aws_secret_access_key)
+#     ses = boto3.client('ses', region_name=region_name, aws_access_key_id=aws_access_key_id,
+#                        aws_secret_access_key=aws_secret_access_key)
+#     queue_url = Queue_URI
+#
+#     customer_info_data = CustomerInfo.query.filter(
+#         CustomerInfo.job_id == redis.get('my_key')).first()
+#
+#     file_name = customer_info_data.File_Name
+#     first_name = customer_info_data.First_Name
+#     # start_date = customer_info_data.start_date
+#     # end_date = customer_info_data.end_date
+#     start_date = 1/12/2022
+#     end_date = 12/12/2023
+#     subject = f"Check Status of {file_name} from {start_date} to {end_date}"
+#     conversion_report_link = f"https://mmc.vishleshak.io/conversion_report/{redis.get('my_key')}"
+#     html_body = f"<html><body><p>Dear {first_name},</p><p>I hope this email finds you well. I wanted to provide you with an update on the status of the file named <strong>{file_name}</strong> that you are associated with. To view the progress and details, please click on the following link:</p><p><a href=\"{conversion_report_link}\">Check Status</a></p>    <p>This link will redirect you to a page where you can check the status of <strong>{file_name}</strong> between the specified start date of <strong>{start_date}</strong> and the end date of <strong>{end_date}</strong>.</p><p>Thank you</p><p>Best regards,<br>Ankit Mehta<br></body></html>"
+#     recipient = get_customerinfo_email()
+#
+#     response = ses.send_email(
+#         Source='ankit@mmcconvert.com',
+#         Destination={'ToAddresses': [recipient]},
+#         Message={
+#             'Subject': {'Data': subject},
+#             'Body': {
+#                 'Html': {'Data': html_body}
+#             }
+#         }
+#     )
+#
+#     sqs.send_message(QueueUrl=queue_url, MessageBody=subject)
+#
+#     return response
+
+
+@blueprint.route("/User_info", methods=["GET", "POST"])
+@login_required
+def User_info():
+
+    if request.method == "GET":
+
+        all_customer_info = CustomerInfo.query.order_by(
+            desc(CustomerInfo.id)).all()
+
+        return render_template(
+            "home/end_user.html",
+            all_customer_info=all_customer_info
+        )
+
+
+
+@blueprint.route("/start_conversion_report/<int:job_id>")
+def start_conversion_report(job_id):
+    dbname = get_mongodb_database()
+
+    job_id1 = job_id
+
+    print(job_id, type(job_id))
+    function_name = ["Existing COA","Chart of Account","Customer","Supplier", "Item", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice","Invoice Creditnote", "Bill","Bill Vendorcredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'],dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'],dbname['xero_creditnote'], dbname['xero_bill'],dbname['xero_vendorcredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == job_id).first()
+
+    company_name = company_info.File_Name,
+    customer_email = company_info.Email,
+
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        print(k)
+
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+    # return jsonify(all_data,function_name);
+    return render_template("home/conversion_report_for_start_conversion.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id, company_name=company_name,
+                           customer_email=customer_email,job_id1=job_id1)
+
+
+@blueprint.route("/conversion_report/<int:job_id>")
+def conversion_report(job_id):
+    dbname = get_mongodb_database()
+    job_id = redis.get('my_key')
+    print(job_id, type(job_id))
+
+    function_name = ["Existing COA","Chart of Account","Customer","Supplier", "Item", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice","Invoice Creditnote", "Bill","Bill Vendorcredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'],dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'],dbname['xero_creditnote'], dbname['xero_bill'],dbname['xero_vendorcredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == job_id).first()
+
+    company_name = company_info.File_Name,
+    customer_email = company_info.Email,
+    start_date = company_info.start_date,
+    end_date = company_info.end_date,
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        print(k)
+
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+    # return jsonify(all_data,function_name);
+    return render_template("home/conversion_report.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id, company_name=company_name,
+                           customer_email=customer_email,
+                           start_date=start_date,
+                           end_date=end_date)
+
+
+@blueprint.route("/start_conversion_report_data/<int:job_id>")
+def start_conversion_report_data(job_id):
+    dbname = get_mongodb_database()
+
+    function_name = ["Existing COA", "Chart of Account", "Customer", "Supplier", "Item", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice","Invoice CreditNote", "Bill","Bill VendorCredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'], dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'],dbname['xero_creditnote'], dbname['xero_bill'],dbname['xero_vendorcredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    # print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == job_id).first()
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+
+    data_list = []
+
+    for i in range(len(function_name)):
+        item_dict = {
+            "company_name": company_info.File_Name,
+            "customer_email": company_info.Email
+             }
+
+        item_dict['function_name'] = function_name[i]
+        item_dict['values'] = s1[i]
+
+        data_list.append(item_dict)
+
+    return jsonify({'data': data_list})
+
+
+@blueprint.route("/conversion_report_data/<int:job_id>")
+def conversion_report_data(job_id):
+    dbname = get_mongodb_database()
+
+    job_id = redis.get('my_key')
+    # print(job_id,type(job_id))
+
+    function_name = ["Existing COA", "Chart of Account", "Customer", "Supplier", "Item", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice", "Bill", "Open Invoice", "Open Bill", "Open Creditnote", "Open Vendorcredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'], dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'], dbname['xero_bill'], dbname['xero_open_invoice'], dbname['xero_open_bill'], dbname['xero_open_creditnote'], dbname['xero_open_suppliercredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    # print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == redis.get('my_key')).first()
+    print(company_info, "print company_info data")
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        # print(k)
+
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+
+    data_list = []
+
+    # print(function_name)
+    # print(s1)
+    # print(f1)
+
+    for i in range(len(function_name)):
+        item_dict = {
+            "company_name": company_info.File_Name,
+            "customer_email": company_info.Email,
+            "start_date": company_info.start_date,
+            "end_date": company_info.end_date, }
+
+        item_dict['function_name'] = function_name[i]
+        item_dict['values'] = s1[i]
+
+        data_list.append(item_dict)
+
+    return jsonify({'data': data_list})
+
+
+
 
         
    
