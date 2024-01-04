@@ -39,7 +39,11 @@
     <div class="col-md-12">
         <div class="card mt-5">
             <div class="card-header">
+                
                 <span>Records</span>
+                <button id="markasdonetask" class="btn btn-info"
+                onclick="markasdonetask('{{ task_id }}','{{function_name}}')">Mark All AS Done</button>
+        
                 <p style="margin-left: 80%;">Successful : {{ successful_count }}/{{ total_records }}</p>
                 <p style="margin-left: 80%;">Failed : {{ error_count }}/{{ total_records }}</p>
                 {% if msg %}
@@ -55,6 +59,7 @@
                         <th>Error</th>
 						<th>Payload</th>
                         <th>Push</th>
+                        <th>Mark As Done</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -73,6 +78,12 @@
                                     {{item}}
                                 </div>
                             </div>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-success"
+                                        onclick="MarkAsDoneRecord('{{ item.task_id }}','{{ function_name }}','{{item._id}}')">Mark As Done
+                                </button>
+
                         </td>
                     </tr>
                     {% endfor %}
@@ -128,5 +139,38 @@
                         }
                 });
     }
+
+    function markasdonetask(TaskId,Function_Name) {
+        $.ajax({
+            url: '/update_task_flag/' + TaskId  + '/'+ Function_Name,
+            type: 'GET',
+
+            success: function (response) {
+                console.log('Are you sure for update task flag');
+                alert('Are you sure for update task flag');
+            },
+            error: function (error) {
+                alert('Field update task flag');
+            }
+
+        });
+    }
+    
+    function MarkAsDoneRecord(task_id,Function_Name,_id) {
+        $.ajax({
+            url: '/update_flag_task_record/' + task_id  + '/'+ Function_Name + '/' + _id,
+            type: 'GET',
+
+            success: function (response) {
+                console.log('Are you sure to mark this record as done?');
+                alert('Are you sure to mark this record as done?');
+            },
+            error: function (error) {
+                alert('There is some technical issue');
+            }
+
+        });
+    }
+
 </script>
 {% endblock javascripts %}

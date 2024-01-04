@@ -1,0 +1,208 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Report Title</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            margin: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px;
+        }
+
+        h1,
+        h3 {
+            color: #333;
+            text-align: left;
+        }
+
+        .card {
+            width: 100%;
+            text-align: center;
+            padding: 18px;
+            border-radius: 25px;
+            position: relative;
+        }
+
+
+        .card-body {
+            border: 2px solid #ccc;
+            border-radius: 60px;
+            padding: 28px;
+            height: auto;
+
+            background-color: white;
+        }
+
+
+        .card img {
+
+            height: auto;
+            max-width: 200px;
+            
+            margin: 0 auto;
+            margin-left: 75%;
+            display: block;
+            margin-top: 16px;
+        }
+
+
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #51b653;
+            position: fixed;
+            bottom: 0;
+            width: 90%;
+            z-index: -1;
+
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            overflow-x: auto;
+
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 16px;
+            font-size: 17px;
+            text-align: left;
+            white-space: nowrap;
+
+        }
+        th{
+            background-color: #51b653;
+        }
+
+
+        th:first-child,
+        td:first-child {
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <img src="https://xerotoqbo.mmcconvert.com/static/assets/img/Quickbooks-Emblem.png" alt="Infographic" style="width: 100%; max-width: 250px;">
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <h1>Comparison Report </h1>
+
+                    <!-- Account table -->
+                    <h3>Account Balances</h3>
+                    <table>
+                        <thead>
+                            <tr>
+
+                                <th>Account_name</th>
+                                <th>XERO</th>
+                                <th>QBO</th>
+                                <!-- Add more columns as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in coa_data %}
+                            <tr>
+
+                                <td>{{ entry.AccountName }}</td>
+                                <td>{{ entry.xero_balance }}</td>
+                                <td>{{ entry.qbo_balance }}</td>
+                                <!-- Add more rows and data as needed -->
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <hr>
+                    <h3>Customer Balances</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer_name</th>
+                                <th>XERO</th>
+                                <th>QBO-Online</th>
+                                <!-- Add more columns as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in cust_data %}
+                            <tr>
+                                <td>{{ entry.Customer_name }}</td>
+                                <td>{{ entry.Xero }}</td>
+                                <td>{{ entry.QBO }}</td>
+                                <!-- Add more rows and data as needed -->
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+
+                    <!-- supplier table creation  -->
+                    <hr>
+                    <h3>Supplier Balances</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Supplier_name</th>
+                                <th>XERO</th>
+                                <th>QBO-Online</th>
+                                <!-- Add more columns as needed -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in supp_data %}
+                            <tr>
+                                <td>{{ entry.Supplier_name }}</td>
+                                <td>{{ entry.Xero }}</td>
+                                <td>{{ entry.QBO }}</td>
+                                <!-- Add more rows and data as needed -->
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+
+
+
+                    <img src="https://xerotoqbo.mmcconvert.com/static/assets/img/businessman-time.jpg" alt="Businessman" class="responsive-image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p> p͎o͎w͎o͎r͎e͎d͎ ͎b͎y͎|𝕄𝕄ℂ_ℂ𝕆𝕟𝕧𝕖𝕣𝕥</p>
+    </footer>
+
+</body>
+
+</html>
