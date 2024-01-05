@@ -46,6 +46,15 @@ def jobs():
 
     return render_template("home/jobs.html", segment="jobs", jobs=jobs_data)
 
+@blueprint.route("/conversion_underway")
+def conversion_underway():
+    job_id = redis.get('my_key')
+    return render_template(
+        "home/conversion_underway.html",
+        job_id=job_id
+
+    )
+
 @blueprint.route("/tasks/<int:job_id>")
 def tasks_by_job(job_id):
     tasks = Task.query.filter(
@@ -445,64 +454,6 @@ def start_conversion_report(job_id):
                            customer_email=customer_email,job_id1=job_id1)
 
 
-@blueprint.route("/conversion_report/<int:job_id>")
-def conversion_report(job_id):
-    dbname = get_mongodb_database()
-    job_id = redis.get('my_key')
-    print(job_id, type(job_id))
-
-    function_name = ["Existing COA","Chart of Account","Customer","Supplier", "Item", "Spend Money",
-                     "Receive Money", "Bank Transfer", "Journal", "Invoice","Invoice Creditnote", "Bill","Bill Vendorcredit", "Invoice Payment", "Bill Payment"]
-    table_name = [dbname['existing_coa'],dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
-                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'],dbname['xero_creditnote'], dbname['xero_bill'],dbname['xero_vendorcredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
-
-    condition1 = {"job_id": f"{job_id}"}
-    print(condition1)
-    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
-    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
-
-    company_info = CustomerInfo.query.filter(
-        CustomerInfo.job_id == job_id).first()
-
-    company_name = company_info.File_Name,
-    customer_email = company_info.Email,
-    start_date = company_info.start_date,
-    end_date = company_info.end_date,
-
-    all_data = []
-    pushed_data = []
-    unpushed_data = []
-    s1 = []
-    f1 = []
-    for k in range(0, len(table_name)):
-        print(k)
-
-        all_data1 = table_name[k].count_documents(condition1)
-        pushed_data1 = table_name[k].count_documents(condition2)
-        unpushed_data1 = table_name[k].count_documents(condition3)
-        all_data.append(all_data1)
-        pushed_data.append(pushed_data1)
-        unpushed_data.append(unpushed_data1)
-        if all_data1 != 0:
-            success = pushed_data1/all_data1*100
-            fail = unpushed_data1/all_data1*100
-            s1.append(success)
-            f1.append(fail)
-
-        else:
-            success = 0
-            fail = 0
-            s1.append(success)
-            f1.append(fail)
-
-        if all_data1 == 0:
-            all_data1 = 100
-    # return jsonify(all_data,function_name);
-    return render_template("home/conversion_report.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id, company_name=company_name,
-                           customer_email=customer_email,
-                           start_date=start_date,
-                           end_date=end_date)
-
 
 @blueprint.route("/start_conversion_report_data/<int:job_id>")
 def start_conversion_report_data(job_id):
@@ -564,75 +515,6 @@ def start_conversion_report_data(job_id):
     return jsonify({'data': data_list})
 
 
-@blueprint.route("/conversion_report_data/<int:job_id>")
-def conversion_report_data(job_id):
-    dbname = get_mongodb_database()
-
-    job_id = redis.get('my_key')
-    # print(job_id,type(job_id))
-
-    function_name = ["Existing COA", "Chart of Account", "Customer", "Supplier", "Item", "Spend Money",
-                     "Receive Money", "Bank Transfer", "Journal", "Invoice", "Bill", "Open Invoice", "Open Bill", "Open Creditnote", "Open Vendorcredit", "Invoice Payment", "Bill Payment"]
-    table_name = [dbname['existing_coa'], dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
-                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'], dbname['xero_bill'], dbname['xero_open_invoice'], dbname['xero_open_bill'], dbname['xero_open_creditnote'], dbname['xero_open_suppliercredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
-
-    condition1 = {"job_id": f"{job_id}"}
-    # print(condition1)
-    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
-    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
-
-    company_info = CustomerInfo.query.filter(
-        CustomerInfo.job_id == redis.get('my_key')).first()
-    print(company_info, "print company_info data")
-
-    all_data = []
-    pushed_data = []
-    unpushed_data = []
-    s1 = []
-    f1 = []
-    for k in range(0, len(table_name)):
-        # print(k)
-
-        all_data1 = table_name[k].count_documents(condition1)
-        pushed_data1 = table_name[k].count_documents(condition2)
-        unpushed_data1 = table_name[k].count_documents(condition3)
-        all_data.append(all_data1)
-        pushed_data.append(pushed_data1)
-        unpushed_data.append(unpushed_data1)
-        if all_data1 != 0:
-            success = pushed_data1/all_data1*100
-            fail = unpushed_data1/all_data1*100
-            s1.append(success)
-            f1.append(fail)
-
-        else:
-            success = 0
-            fail = 0
-            s1.append(success)
-            f1.append(fail)
-
-        if all_data1 == 0:
-            all_data1 = 100
-
-    data_list = []
-
-    # print(function_name)
-    # print(s1)
-    # print(f1)
-
-    for i in range(len(function_name)):
-        item_dict = {
-            "company_name": company_info.File_Name,
-            "customer_email": company_info.Email,
-            "start_date": company_info.start_date,
-            "end_date": company_info.end_date, }
-
-        item_dict['function_name'] = function_name[i]
-        item_dict['values'] = s1[i]
-
-        data_list.append(item_dict)
-
-    return jsonify({'data': data_list})
 
 @blueprint.route("/Create_final_report", methods=["GET", "POST"])
 def Create_final_report(job_id):
@@ -1092,3 +974,127 @@ def records(task_id, function_name):
                 data1.append(i)
             return render_template("home/records.html", data1=data1, page=page, per_page=per_page, total_records=total_records, successful_count=successful_count, error_count=error_count, task_id=task_id, function_name='Bank Transfer')
 
+
+
+@blueprint.route("/conversion_report/<int:job_id>")
+def conversion_report(job_id):
+    dbname = get_mongodb_database()
+    job_id = redis.get('my_key')
+    print(job_id, type(job_id))
+
+    function_name = ["Existing COA","Chart of Account","Customer","Supplier", "Item", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice","Invoice Creditnote", "Bill","Bill Vendorcredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'],dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'],dbname['xero_creditnote'], dbname['xero_bill'],dbname['xero_vendorcredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == job_id).first()
+
+
+    customer_email = company_info.Email
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        print(k)
+
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+    # return jsonify(all_data,function_name);
+    return render_template("home/conversion_report.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id,customer_email=customer_email)
+
+
+@blueprint.route("/conversion_report_data/<int:job_id>")
+def conversion_report_data(job_id):
+    dbname = get_mongodb_database()
+
+    job_id = redis.get('my_key')
+    # print(job_id,type(job_id))
+
+    function_name = ["Existing COA", "Chart of Account", "Customer", "Supplier", "Item","Class", "Spend Money",
+                     "Receive Money", "Bank Transfer", "Journal", "Invoice", "Bill", "Open Invoice", "Open Bill", "Open Creditnote", "Open Vendorcredit", "Invoice Payment", "Bill Payment"]
+    table_name = [dbname['existing_coa'], dbname['xero_classified_coa'], dbname['xero_customer'], dbname['xero_supplier'], dbname['xero_items'],dbname['xero_job'], dbname['xero_spend_money'], dbname['xero_receive_money'],
+                  dbname['xero_bank_transfer'], dbname['xero_manual_journal'], dbname['xero_invoice'], dbname['xero_bill'], dbname['xero_open_invoice'], dbname['xero_open_bill'], dbname['xero_open_creditnote'], dbname['xero_open_suppliercredit'], dbname['xero_invoice_payment'], dbname['xero_bill_payment']]
+
+    condition1 = {"job_id": f"{job_id}"}
+    # print(condition1)
+    condition2 = {"job_id": f"{job_id}", "is_pushed": 1}
+    condition3 = {"job_id": f"{job_id}", "is_pushed": 0}
+
+    company_info = CustomerInfo.query.filter(
+        CustomerInfo.job_id == redis.get('my_key')).first()
+    print(company_info, "print company_info data")
+
+    all_data = []
+    pushed_data = []
+    unpushed_data = []
+    s1 = []
+    f1 = []
+    for k in range(0, len(table_name)):
+        # print(k)
+
+        all_data1 = table_name[k].count_documents(condition1)
+        pushed_data1 = table_name[k].count_documents(condition2)
+        unpushed_data1 = table_name[k].count_documents(condition3)
+        all_data.append(all_data1)
+        pushed_data.append(pushed_data1)
+        unpushed_data.append(unpushed_data1)
+        if all_data1 != 0:
+            success = pushed_data1/all_data1*100
+            fail = unpushed_data1/all_data1*100
+            s1.append(success)
+            f1.append(fail)
+
+        else:
+            success = 0
+            fail = 0
+            s1.append(success)
+            f1.append(fail)
+
+        if all_data1 == 0:
+            all_data1 = 100
+
+    data_list = []
+
+    # print(function_name)
+    # print(s1)
+    # print(f1)
+
+    for i in range(len(function_name)):
+        item_dict = {
+
+            "customer_email": company_info.Email
+           }
+
+        item_dict['function_name'] = function_name[i]
+        item_dict['values'] = s1[i]
+
+        data_list.append(item_dict)
+
+    return jsonify({'data': data_list})

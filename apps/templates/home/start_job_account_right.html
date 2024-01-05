@@ -1,73 +1,102 @@
-{% extends "layouts/base.html" %}
 
-{% block title %} UI Forms {% endblock %}
 
-<!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/css/select2.min.css" rel="stylesheet"/>
-{% endblock stylesheets %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Conversion</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
 
-<div class="card" style="width: 77rem; height: 37rem;">
-        <div class="card-body" style="margin-left: 40%;">
-            <div class="row">
-                <div class="col-md-6">
-                    <div id="ajax-alert" class=""></div>
-                    <button id="start_conversion" class="btn btn-info ms-10 mb-3">Start Conversion</button>
-                </div>        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .infographic-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 820px;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .form-control {
+            border: none;
+            border-radius: 0;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img class="infographic-img mb-4" src="/static/assets/img/mmc_logo.png" alt="Infographic" style="width: 70px;">
+   
+        <div class="card">
+            <div class="card-header">
+                <h1 class="text"><b>Start Conversion From MYOB_Accountright to QBO</b></h1>
+                <br>
             </div>
+
+            
+                <!-- New "Start Conversion" button -->
+                <button class="btn btn-primary" id="start_conversion">Start Conversion</button>
+            </div>
+        </div>
     </div>
-</div>
+
+    <!-- jQuery and Bootstrap JS CDN links -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"
+        integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#start_conversion').click(function () {
+                $.ajax({
+                    type: "POST",
+                    url: "/startJobByID",
+                });
+            });
+
+            // Handle click event for the "Start Conversion" button
+            $('#start_conversion').click(function () {
+                window.location.href="/conversion_underway"
+            });
+        });
+    </script>
+</body>
+
+</html>
 
 
-{% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script>
-
-$(document).ready(function() {
-        $('#start_conversion').click(function() {
-        $.ajax({
-        type: "POST",
-        url: "/startJobByID",
-        success: function(data) {
-                            var result = $.parseJSON(data);
-                            $("#ajax-alert").addClass("alert alert-success").text('Conversion has been started successfully!!');
-                                    $("#ajax-alert").alert();
-                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
-                                    });
-                            $("#ajax-alert").addClass("alert alert-success").text('Job has been started successfully!!');
-                                    $("#ajax-alert").alert();
-                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
-                                    });
-                            if(result.status=='success'){
-                                    $("#ajax-alert").addClass("alert alert-success").text('Conversion has been started successfully!!');
-                                    $("#ajax-alert").alert();
-                                    $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
-                                    });
-                            }else{
-                                $("#ajax-alert").addClass("alert alert-danger").text('Something went wrong!!');
-                                $("#ajax-alert").alert();
-                                $("#ajax-alert").fadeTo(5000, 5000).slideUp(5000, function(){
-                                });
-                            }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("Error:", error);
-                    }
-        
-     });
-     });
-     });
-	
-</script>
-{% endblock javascripts %}
 
 
 
