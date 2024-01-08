@@ -997,6 +997,9 @@ def conversion_report(job_id):
 
 
     customer_email = company_info.Email
+    customer_company = company_info.File_Name
+    
+
 
     all_data = []
     pushed_data = []
@@ -1027,7 +1030,7 @@ def conversion_report(job_id):
         if all_data1 == 0:
             all_data1 = 100
     # return jsonify(all_data,function_name);
-    return render_template("home/conversion_report.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id,customer_email=customer_email)
+    return render_template("home/conversion_report.html", function_name=function_name, data1=all_data, data2=pushed_data, data3=unpushed_data, success=s1, fail=f1, job_id=job_id,customer_email=customer_email,customer_company=customer_company)
 
 
 @blueprint.route("/conversion_report_data/<int:job_id>")
@@ -1089,7 +1092,8 @@ def conversion_report_data(job_id):
     for i in range(len(function_name)):
         item_dict = {
 
-            "customer_email": company_info.Email
+            "customer_email": company_info.Email,
+            "customer_company": company_info.File_Name
            }
 
         item_dict['function_name'] = function_name[i]
